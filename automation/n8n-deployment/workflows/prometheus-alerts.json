@@ -16,86 +16,37 @@
     },
     {
       "parameters": {
-        "jsCode": "// Parse Prometheus Alertmanager payload\nconst alerts = $input.first().json.alerts || [];\nconst results = [];\n\nfor (const alert of alerts) {\n  const status = alert.status; // firing or resolved\n  const severity = alert.labels?.severity || 'unknown';\n  const alertname = alert.labels?.alertname || 'Unknown Alert';\n  const instance = alert.labels?.instance || 'N/A';\n  const job = alert.labels?.job || 'N/A';\n  const description = alert.annotations?.description || alert.annotations?.summary || 'No description';\n  const grafanaUrl = alert.generatorURL || '';\n  \n  // Color based on status/severity\n  let color = 16776960; // yellow default\n  if (status === 'resolved') {\n    color = 65280; // green\n  } else if (severity === 'critical') {\n    color = 16711680; // red\n  } else if (severity === 'warning') {\n    color = 16744448; // orange\n  }\n  \n  // Emoji based on status\n  const emoji = status === 'resolved' ? '✅' : (severity === 'critical' ? '🚨' : '⚠️');\n  \n  results.push({\n    json: {\n      status,\n      severity,\n      alertname,\n      instance,\n      job,\n      description,\n      grafanaUrl,\n      color,\n      emoji,\n      timestamp: new Date().toISOString()\n    }\n  });\n}\n\nreturn results.length > 0 ? results : [{ json: { skip: true } }];"
+        "jsCode": "const input = $input.first().json;\nconst alerts = input.body?.alerts || input.alerts || [];\nconst results = [];\n\nfor (const alert of alerts) {\n  const status = alert.status;\n  const severity = alert.labels?.severity || 'unknown';\n  const alertname = alert.labels?.alertname || 'Unknown Alert';\n  const instance = alert.labels?.instance || 'N/A';\n  const job = alert.labels?.job || 'N/A';\n  const description = alert.annotations?.description || alert.annotations?.summary || 'No description';\n  \n  let color = 16776960;\n  if (status === 'resolved') {\n    color = 65280;\n  } else if (severity === 'critical') {\n    color = 16711680;\n  } else if (severity === 'warning') {\n    color = 16744448;\n  }\n  \n  const emoji = status === 'resolved' ? '✅' : (severity === 'critical' ? '🚨' : '⚠️');\n  const title = emoji + ' ' + status.toUpperCase() + ': ' + alertname;\n  \n  const payload = {\n    embeds: [{\n      title: title,\n      description: description,\n      color: color,\n      fields: [\n        { name: 'Severity', value: severity, inline: true },\n        { name: 'Instance', value: instance, inline: true },\n        { name: 'Job', value: job, inline: true }\n      ],\n      timestamp: new Date().toISOString(),\n      footer: { text: 'Prometheus Alertmanager' }\n    }]\n  };\n  \n  results.push({ json: payload });\n}\n\nreturn results;"
       },
       "id": "parse-alerts",
-      "name": "Parse Alerts",
+      "name": "Build Discord Payload",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [470, 300]
     },
     {
       "parameters": {
-        "conditions": {
-          "boolean": [
-            {
-              "value1": "={{ $json.skip }}",
-              "value2": true,
-              "operation": "notEqual"
-            }
-          ]
-        }
-      },
-      "id": "filter-skip",
-      "name": "Filter Empty",
-      "type": "n8n-nodes-base.filter",
-      "typeVersion": 2,
-      "position": [690, 300]
-    },
-    {
-      "parameters": {
         "method": "POST",
-        "url": "={{ $vars.discord_webhook_url }}",
+        "url": "https://discord.com/api/webhooks/YOUR_WEBHOOK_ID/YOUR_WEBHOOK_TOKEN",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"embeds\": [{\n    \"title\": \"{{ $json.emoji }} {{ $json.status.toUpperCase() }}: {{ $json.alertname }}\",\n    \"description\": \"{{ $json.description }}\",\n    \"color\": {{ $json.color }},\n    \"fields\": [\n      {\n        \"name\": \"Severity\",\n        \"value\": \"{{ $json.severity }}\",\n        \"inline\": true\n      },\n      {\n        \"name\": \"Instance\",\n        \"value\": \"{{ $json.instance }}\",\n        \"inline\": true\n      },\n      {\n        \"name\": \"Job\",\n        \"value\": \"{{ $json.job }}\",\n        \"inline\": true\n      }\n    ],\n    \"timestamp\": \"{{ $json.timestamp }}\",\n    \"footer\": {\n      \"text\": \"Prometheus Alertmanager\"\n    }\n  }]\n}",
+        "jsonBody": "={{ JSON.stringify($json) }}",
         "options": {}
       },
       "id": "discord-webhook",
       "name": "Send to Discord",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [910, 300]
+      "position": [690, 300]
     }
   ],
   "connections": {
     "Prometheus Webhook": {
-      "main": [
-        [
-          {
-            "node": "Parse Alerts",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
+      "main": [[{"node": "Build Discord Payload", "type": "main", "index": 0}]]
     },
-    "Parse Alerts": {
-      "main": [
-        [
-          {
-            "node": "Filter Empty",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Filter Empty": {
-      "main": [
-        [
-          {
-            "node": "Send to Discord",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
+    "Build Discord Payload": {
+      "main": [[{"node": "Send to Discord", "type": "main", "index": 0}]]
     }
   },
-  "settings": {
-    "executionOrder": "v1"
-  },
-  "staticData": null,
-  "tags": ["alerts", "prometheus", "discord"]
+  "settings": {"executionOrder": "v1"}
 }
