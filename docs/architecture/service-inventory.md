@@ -55,15 +55,6 @@ Complete inventory of services deployed to the K3s cluster.
 
 ## Dashboards
 
-### Homarr
-- **URL**: http://dashboard.cluster.local
-- **Namespace**: homarr
-- **Purpose**: Interactive service dashboard
-- **Features**:
-  - Service status indicators
-  - Customizable widgets
-  - Icon library integration
-
 ### Homer
 - **URL**: http://home.cluster.local
 - **Namespace**: homer
@@ -122,7 +113,6 @@ Complete inventory of services deployed to the K3s cluster.
 | observability | 3 | 4 | 2 |
 | uptime-kuma | 1 | 1 | 1 |
 | bookstack | 2 | 2 | 1 |
-| homarr | 1 | 1 | 1 |
 | homer | 1 | 1 | 1 |
 | metallb-system | 2 | 0 | 0 |
 
@@ -148,7 +138,7 @@ Complete inventory of services deployed to the K3s cluster.
      │          │         │         │          │
      ▼          ▼         ▼         ▼          ▼
 ┌─────────┐┌─────────┐┌─────────┐┌─────────┐┌─────────┐
-│ Rancher ││ Grafana ││BookStack││ Homarr  ││  Homer  │
+│ Rancher ││ Grafana ││BookStack││  Homer  ││  Uptime │
 └─────────┘└─────────┘└────┬────┘└─────────┘└─────────┘
                            │
                            ▼
