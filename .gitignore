@@ -1,0 +1,55 @@
+# Secrets and credentials
+config.yaml
+*.key
+*.pem
+*.crt
+secrets/
+*-secrets.yaml
+.env
+.env.*
+
+# Sensitive configs
+bookstack-config.yaml
+*-credentials.yaml
+*-token.yaml
+admin-password*.txt
+
+# Logs
+*.log
+logs/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+venv/
+.venv/
+*.egg-info/
+
+# Audit results (regenerated)
+audit-results/
+
+# Backups
+backups/
+*.bak
+*.backup
+
+# OS files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# IDE
+.idea/
+.vscode/
+*.sublime-*
+
+# Temporary files
+*.tmp
+*.temp
+/tmp/
+
+# Kubernetes secrets exports
+*-secret.yaml

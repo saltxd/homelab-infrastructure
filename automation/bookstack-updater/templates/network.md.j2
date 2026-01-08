@@ -1,0 +1,36 @@
+# Network Overview
+
+*Last updated: {{ updated_at }}*
+
+## Network Topology
+
+| Segment | Range | Purpose |
+|---------|-------|---------|
+| LAN | 192.168.1.0/24 | Primary network |
+| K3s Pods | 10.42.0.0/16 | Kubernetes pod network |
+| K3s Services | 10.43.0.0/16 | Kubernetes service network |
+
+## Key IP Addresses
+
+| Service | IP Address | Description |
+|---------|------------|-------------|
+| K3s API | 192.168.1.190:6443 | Kubernetes API server |
+| Traefik LB | 192.168.1.231 | Ingress LoadBalancer |
+| AdGuard DNS | 192.168.1.2 | Primary DNS |
+| MetalLB Pool | 192.168.1.231-239 | LoadBalancer IP range |
+
+## DNS Configuration
+
+DNS is handled by AdGuard Home at `192.168.1.2`.
+
+### DNS Rewrites
+- `*.k3s.nox` → 192.168.1.231
+- `*.homelab.internal` → 192.168.1.231
+- `*.home.lab` → 192.168.1.231
+
+## Gateway & Routing
+
+| Route | Gateway | Interface |
+|-------|---------|-----------|
+| Default | 192.168.1.1 | LAN |
+| Tailscale | 100.x.x.x | tailscale0 |

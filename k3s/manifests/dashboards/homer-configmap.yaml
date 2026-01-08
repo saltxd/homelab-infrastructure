@@ -1,0 +1,40 @@
+apiVersion: v1
+data:
+  config.yml: "title: \"Homelab Dashboard\"\nsubtitle: \"K3s Cluster Services\"\n\nheader:
+    true\nfooter: '<p>Homelab K3s Cluster</p>'\n\ncolors:\n  light:\n    highlight-primary:
+    \"#3367d6\"\n    highlight-secondary: \"#4285f4\"\n    highlight-hover: \"#5a95f5\"\n
+    \   background: \"#f5f5f5\"\n    card-background: \"#ffffff\"\n    text: \"#363636\"\n
+    \   text-header: \"#ffffff\"\n    text-title: \"#303030\"\n    text-subtitle:
+    \"#424242\"\n    card-shadow: rgba(0, 0, 0, 0.1)\n    link: \"#3273dc\"\n    link-hover:
+    \"#363636\"\n  dark:\n    highlight-primary: \"#3367d6\"\n    highlight-secondary:
+    \"#4285f4\"\n    highlight-hover: \"#5a95f5\"\n    background: \"#131313\"\n    card-background:
+    \"#2b2b2b\"\n    text: \"#eaeaea\"\n    text-header: \"#ffffff\"\n    text-title:
+    \"#fafafa\"\n    text-subtitle: \"#f5f5f5\"\n    card-shadow: rgba(0, 0, 0, 0.4)\n
+    \   link: \"#3273dc\"\n    link-hover: \"#ffdd57\"\n\nlinks: []\n\nservices:\n
+    \ - name: \"Monitoring\"\n    icon: \"fas fa-chart-line\"\n    items:\n      -
+    name: \"Grafana\"\n        subtitle: \"Metrics & Dashboards\"\n        tag: \"monitoring\"\n
+    \       url: \"http://grafana.k3s.nox\"\n        target: \"_blank\"\n      - name:
+    \"Uptime Kuma\"\n        subtitle: \"Status Monitoring\"\n        tag: \"monitoring\"\n
+    \       url: \"http://uptime.k3s.nox\"\n        target: \"_blank\"\n      - name:
+    \"Prometheus\"\n        subtitle: \"Metrics Collection\"\n        tag: \"monitoring\"\n
+    \       url: \"http://prometheus.k3s.nox\"\n        target: \"_blank\"\n  \n  -
+    name: \"Cluster Management\"\n    icon: \"fas fa-server\"\n    items:\n      -
+    name: \"Rancher\"\n        subtitle: \"K3s Cluster Management\"\n        tag:
+    \"cluster\"\n        url: \"https://rancher.homelab.internal\"\n        target:
+    \"_blank\"\n      - name: \"ArgoCD\"\n        subtitle: \"GitOps Deployments\"\n
+    \       tag: \"cluster\"\n        url: \"http://argo.k3s.nox\"\n        target:
+    \"_blank\"\n  \n  - name: \"Infrastructure\"\n    icon: \"fas fa-network-wired\"\n
+    \   items:\n      - name: \"AdGuard Home\"\n        subtitle: \"DNS Filtering\"\n
+    \       tag: \"infra\"\n        url: \"http://192.168.1.2\"\n        target: \"_blank\"\n
+    \     - name: \"Homebridge\"\n        subtitle: \"Smart Home (fz-hb)\"\n        tag:
+    \"infra\"\n        url: \"http://192.168.1.216:8581\"\n        target: \"_blank\"\n"
+kind: ConfigMap
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"v1","data":{"config.yml":"title: \"Homelab Dashboard\"\nsubtitle: \"K3s Cluster Services\"\n\nheader: true\nfooter: '\u003cp\u003eHomelab K3s Cluster\u003c/p\u003e'\n\ncolors:\n  light:\n    highlight-primary: \"#3367d6\"\n    highlight-secondary: \"#4285f4\"\n    highlight-hover: \"#5a95f5\"\n    background: \"#f5f5f5\"\n    card-background: \"#ffffff\"\n    text: \"#363636\"\n    text-header: \"#ffffff\"\n    text-title: \"#303030\"\n    text-subtitle: \"#424242\"\n    card-shadow: rgba(0, 0, 0, 0.1)\n    link: \"#3273dc\"\n    link-hover: \"#363636\"\n  dark:\n    highlight-primary: \"#3367d6\"\n    highlight-secondary: \"#4285f4\"\n    highlight-hover: \"#5a95f5\"\n    background: \"#131313\"\n    card-background: \"#2b2b2b\"\n    text: \"#eaeaea\"\n    text-header: \"#ffffff\"\n    text-title: \"#fafafa\"\n    text-subtitle: \"#f5f5f5\"\n    card-shadow: rgba(0, 0, 0, 0.4)\n    link: \"#3273dc\"\n    link-hover: \"#ffdd57\"\n\nlinks: []\n\nservices:\n  - name: \"Monitoring\"\n    icon: \"fas fa-chart-line\"\n    items:\n      - name: \"Grafana\"\n        subtitle: \"Metrics \u0026 Dashboards\"\n        tag: \"monitoring\"\n        url: \"http://grafana.k3s.nox\"\n        target: \"_blank\"\n      - name: \"Uptime Kuma\"\n        subtitle: \"Status Monitoring\"\n        tag: \"monitoring\"\n        url: \"http://uptime.k3s.nox\"\n        target: \"_blank\"\n      - name: \"Prometheus\"\n        subtitle: \"Metrics Collection\"\n        tag: \"monitoring\"\n        url: \"http://prometheus.k3s.nox\"\n        target: \"_blank\"\n  \n  - name: \"Cluster Management\"\n    icon: \"fas fa-server\"\n    items:\n      - name: \"Rancher\"\n        subtitle: \"K3s Cluster Management\"\n        tag: \"cluster\"\n        url: \"https://rancher.homelab.internal\"\n        target: \"_blank\"\n      - name: \"ArgoCD\"\n        subtitle: \"GitOps Deployments\"\n        tag: \"cluster\"\n        url: \"http://argo.k3s.nox\"\n        target: \"_blank\"\n  \n  - name: \"Infrastructure\"\n    icon: \"fas fa-network-wired\"\n    items:\n      - name: \"AdGuard Home\"\n        subtitle: \"DNS Filtering\"\n        tag: \"infra\"\n        url: \"http://192.168.1.2\"\n        target: \"_blank\"\n      - name: \"Homebridge\"\n        subtitle: \"Smart Home (fz-hb)\"\n        tag: \"infra\"\n        url: \"http://192.168.1.216:8581\"\n        target: \"_blank\"\n"},"kind":"ConfigMap","metadata":{"annotations":{},"name":"homer-config","namespace":"homer"}}
+  creationTimestamp: "2026-01-08T03:26:53Z"
+  name: homer-config
+  namespace: homer
+  resourceVersion: "47027"
+  uid: 74b435a5-2bf1-4165-8bd1-dcb85e151cf2

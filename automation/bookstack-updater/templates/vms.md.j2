@@ -1,0 +1,30 @@
+# Virtual Machine Inventory
+
+*Last updated: {{ updated_at }}*
+
+## Summary
+
+- **Total VMs**: {{ vms | length }}
+- **Running**: {{ vms | selectattr('status', 'equalto', 'running') | list | length }}
+- **Stopped**: {{ vms | selectattr('status', 'equalto', 'stopped') | list | length }}
+
+## VM List
+
+| Name | VMID | Status | IP Address | CPU | Memory | Purpose |
+|------|------|--------|------------|-----|--------|---------|
+{% for vm in vms %}
+| {{ vm.name }} | {{ vm.vmid }} | {{ vm.status }} | {{ vm.ip | default('N/A') }} | {{ vm.cpu }} | {{ vm.memory }} | {{ vm.purpose | default('-') }} |
+{% endfor %}
+
+## By Node
+
+{% for node, node_vms in vms_by_node.items() %}
+### {{ node }}
+
+| VM | Status | IP | Resources |
+|----|--------|-----|-----------|
+{% for vm in node_vms %}
+| {{ vm.name }} | {{ vm.status }} | {{ vm.ip | default('N/A') }} | {{ vm.cpu }} CPU, {{ vm.memory }} RAM |
+{% endfor %}
+
+{% endfor %}

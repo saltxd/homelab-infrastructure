@@ -1,0 +1,49 @@
+# K3s Cluster State
+
+*Last updated: {{ updated_at }}*
+
+## Cluster Info
+
+- **Version**: {{ k3s_version }}
+- **API Server**: https://192.168.1.190:6443
+- **Backend**: Embedded etcd (HA mode)
+
+## Nodes
+
+| Name | Role | Status | Version | IP Address |
+|------|------|--------|---------|------------|
+{% for node in nodes %}
+| {{ node.name }} | {{ node.role }} | {{ node.status }} | {{ node.version }} | {{ node.ip }} |
+{% endfor %}
+
+## Namespaces
+
+| Namespace | Status |
+|-----------|--------|
+{% for ns in namespaces %}
+| {{ ns.name }} | {{ ns.status }} |
+{% endfor %}
+
+## Deployments
+
+| Namespace | Name | Ready | Image |
+|-----------|------|-------|-------|
+{% for deploy in deployments %}
+| {{ deploy.namespace }} | {{ deploy.name }} | {{ deploy.ready }} | {{ deploy.image }} |
+{% endfor %}
+
+## Services
+
+| Namespace | Name | Type | Cluster IP | External IP | Ports |
+|-----------|------|------|------------|-------------|-------|
+{% for svc in services %}
+| {{ svc.namespace }} | {{ svc.name }} | {{ svc.type }} | {{ svc.cluster_ip }} | {{ svc.external_ip | default('-') }} | {{ svc.ports }} |
+{% endfor %}
+
+## Ingresses
+
+| Namespace | Name | Host | Address |
+|-----------|------|------|---------|
+{% for ing in ingresses %}
+| {{ ing.namespace }} | {{ ing.name }} | {{ ing.host }} | {{ ing.address }} |
+{% endfor %}

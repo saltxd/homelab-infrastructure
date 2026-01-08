@@ -1,0 +1,58 @@
+# BookStack Auto-Updater Configuration
+# Copy to config.yaml and fill in your values
+
+bookstack:
+  url: http://docs.k3s.nox
+  api_token_id: "YOUR_TOKEN_ID_HERE"      # Create in BookStack UI
+  api_token_secret: "YOUR_TOKEN_SECRET"   # Keep this secret!
+
+audit:
+  script: ~/homelab-audit.sh
+  results_dir: ~/audit-results/
+
+books:
+  infrastructure:
+    name: "Infrastructure"
+    chapters:
+      - name: "Network"
+        pages:
+          - name: "Network Overview"
+            template: templates/network.md.j2
+      - name: "Proxmox Nodes"
+        pages:
+          - name: "Node Inventory"
+            template: templates/proxmox.md.j2
+      - name: "Virtual Machines"
+        pages:
+          - name: "VM Inventory"
+            template: templates/vms.md.j2
+      - name: "K3s Cluster"
+        pages:
+          - name: "Cluster State"
+            template: templates/k3s.md.j2
+
+  runbooks:
+    name: "Runbooks"
+    chapters:
+      - name: "Common Tasks"
+        pages: []
+      - name: "Troubleshooting"
+        pages: []
+
+  services:
+    name: "Services"
+    chapters:
+      - name: "Monitoring Stack"
+        pages: []
+      - name: "DNS Services"
+        pages: []
+      - name: "Applications"
+        pages: []
+
+discord:
+  webhook_url: ""  # Optional: Discord webhook for notifications
+  enabled: false
+
+logging:
+  level: INFO
+  file: ~/logs/bookstack-updater.log

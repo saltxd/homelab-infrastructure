@@ -1,0 +1,131 @@
+---
+# Namespace
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: homarr
+---
+# Encryption Secret
+apiVersion: v1
+kind: Secret
+metadata:
+  name: db-encryption
+  namespace: homarr
+type: Opaque
+stringData:
+  db-encryption-key: "b460232d914de16cda8f13814048be87cfd2cb1be330c1faae63f349051811b2"
+---
+# Homarr Data PVC
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: homarr-database
+  namespace: homarr
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+# Homarr Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: homarr
+  namespace: homarr
+  labels:
+    app: homarr
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: homarr
+  template:
+    metadata:
+      labels:
+        app: homarr
+    spec:
+      containers:
+        - name: homarr
+          image: ghcr.io/homarr-labs/homarr:latest
+          ports:
+            - containerPort: 7575
+              name: http
+              protocol: TCP
+          env:
+            - name: SECRET_ENCRYPTION_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: db-encryption
+                  key: db-encryption-key
+            - name: TZ
+              value: "America/Denver"
+          volumeMounts:
+            - name: appdata
+              mountPath: /appdata
+          resources:
+            requests:
+              cpu: 200m
+              memory: 512Mi
+            limits:
+              cpu: 1000m
+              memory: 1Gi
+          livenessProbe:
+            httpGet:
+              path: /api/health/live
+              port: 7575
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /api/health/ready
+              port: 7575
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            failureThreshold: 3
+      volumes:
+        - name: appdata
+          persistentVolumeClaim:
+            claimName: homarr-database
+---
+# Homarr Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: homarr
+  namespace: homarr
+spec:
+  type: ClusterIP
+  ports:
+    - port: 7575
+      targetPort: 7575
+      protocol: TCP
+      name: http
+  selector:
+    app: homarr
+---
+# Homarr Ingress
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: homarr
+  namespace: homarr
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: web
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: dashboard.k3s.nox
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: homarr
+                port:
+                  number: 7575

@@ -1,0 +1,334 @@
+apiVersion: v1
+items:
+- apiVersion: networking.k8s.io/v1
+  kind: Ingress
+  metadata:
+    annotations:
+      field.cattle.io/publicEndpoints: '[{"addresses":["192.168.1.231"],"port":80,"protocol":"HTTP","serviceName":"argocd:argocd-server","ingressName":"argocd:argocd","hostname":"argo.k3s.nox","path":"/","allNodes":false}]'
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"networking.k8s.io/v1","kind":"Ingress","metadata":{"annotations":{},"name":"argocd","namespace":"argocd"},"spec":{"ingressClassName":"traefik","rules":[{"host":"argo.k3s.nox","http":{"paths":[{"backend":{"service":{"name":"argocd-server","port":{"number":80}}},"path":"/","pathType":"Prefix"}]}}]}}
+    creationTimestamp: "2025-08-16T01:45:51Z"
+    generation: 1
+    name: argocd
+    namespace: argocd
+    resourceVersion: "10255"
+    uid: 6ea49f3b-94e8-4143-9208-2338eda7ae1f
+  spec:
+    ingressClassName: traefik
+    rules:
+    - host: argo.k3s.nox
+      http:
+        paths:
+        - backend:
+            service:
+              name: argocd-server
+              port:
+                number: 80
+          path: /
+          pathType: Prefix
+  status:
+    loadBalancer:
+      ingress:
+      - ip: 192.168.1.231
+- apiVersion: networking.k8s.io/v1
+  kind: Ingress
+  metadata:
+    annotations:
+      field.cattle.io/publicEndpoints: '[{"addresses":["192.168.1.231"],"port":80,"protocol":"HTTP","serviceName":"bookstack:bookstack","ingressName":"bookstack:bookstack","hostname":"docs.k3s.nox","path":"/","allNodes":false}]'
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"networking.k8s.io/v1","kind":"Ingress","metadata":{"annotations":{"traefik.ingress.kubernetes.io/router.entrypoints":"web"},"name":"bookstack","namespace":"bookstack"},"spec":{"ingressClassName":"traefik","rules":[{"host":"docs.k3s.nox","http":{"paths":[{"backend":{"service":{"name":"bookstack","port":{"number":80}}},"path":"/","pathType":"Prefix"}]}}]}}
+      traefik.ingress.kubernetes.io/router.entrypoints: web
+    creationTimestamp: "2026-01-08T04:06:41Z"
+    generation: 1
+    name: bookstack
+    namespace: bookstack
+    resourceVersion: "50991"
+    uid: 0320a34a-e9bf-4d26-a12f-23ea3255951e
+  spec:
+    ingressClassName: traefik
+    rules:
+    - host: docs.k3s.nox
+      http:
+        paths:
+        - backend:
+            service:
+              name: bookstack
+              port:
+                number: 80
+          path: /
+          pathType: Prefix
+  status:
+    loadBalancer:
+      ingress:
+      - ip: 192.168.1.231
+- apiVersion: networking.k8s.io/v1
+  kind: Ingress
+  metadata:
+    annotations:
+      cert-manager.io/issuer: rancher
+      cert-manager.io/issuer-kind: Issuer
+      field.cattle.io/publicEndpoints: '[{"addresses":["192.168.1.231"],"port":443,"protocol":"HTTPS","serviceName":"cattle-system:rancher","ingressName":"cattle-system:rancher","hostname":"rancher.homelab.internal","path":"/","allNodes":false}]'
+      meta.helm.sh/release-name: rancher
+      meta.helm.sh/release-namespace: cattle-system
+      nginx.ingress.kubernetes.io/proxy-connect-timeout: "30"
+      nginx.ingress.kubernetes.io/proxy-read-timeout: "1800"
+      nginx.ingress.kubernetes.io/proxy-send-timeout: "1800"
+    creationTimestamp: "2026-01-08T02:33:33Z"
+    generation: 1
+    labels:
+      app: rancher
+      app.kubernetes.io/managed-by: Helm
+      chart: rancher-2.13.1
+      heritage: Helm
+      release: rancher
+    name: rancher
+    namespace: cattle-system
+    resourceVersion: "10256"
+    uid: 860e5075-86ad-4f7d-86c3-5cc30e49681c
+  spec:
+    ingressClassName: traefik
+    rules:
+    - host: rancher.homelab.internal
+      http:
+        paths:
+        - backend:
+            service:
+              name: rancher
+              port:
+                number: 80
+          path: /
+          pathType: ImplementationSpecific
+    tls:
+    - hosts:
+      - rancher.homelab.internal
+      secretName: tls-rancher-ingress
+  status:
+    loadBalancer:
+      ingress:
+      - ip: 192.168.1.231
+- apiVersion: networking.k8s.io/v1
+  kind: Ingress
+  metadata:
+    annotations:
+      field.cattle.io/publicEndpoints: '[{"addresses":["192.168.1.231"],"port":80,"protocol":"HTTP","serviceName":"default:whoami","ingressName":"default:whoami","hostname":"whoami.k3s.nox","path":"/","allNodes":false}]'
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"networking.k8s.io/v1","kind":"Ingress","metadata":{"annotations":{},"name":"whoami","namespace":"default"},"spec":{"ingressClassName":"traefik","rules":[{"host":"whoami.k3s.nox","http":{"paths":[{"backend":{"service":{"name":"whoami","port":{"number":80}}},"path":"/","pathType":"Prefix"}]}}]}}
+    creationTimestamp: "2025-08-16T01:42:41Z"
+    generation: 1
+    name: whoami
+    namespace: default
+    resourceVersion: "10252"
+    uid: a1adaf31-3a68-4ace-9e1c-f087827ea819
+  spec:
+    ingressClassName: traefik
+    rules:
+    - host: whoami.k3s.nox
+      http:
+        paths:
+        - backend:
+            service:
+              name: whoami
+              port:
+                number: 80
+          path: /
+          pathType: Prefix
+  status:
+    loadBalancer:
+      ingress:
+      - ip: 192.168.1.231
+- apiVersion: networking.k8s.io/v1
+  kind: Ingress
+  metadata:
+    annotations:
+      field.cattle.io/publicEndpoints: '[{"addresses":["192.168.1.231"],"port":80,"protocol":"HTTP","serviceName":"default:whoami","ingressName":"default:whoami-ing","hostname":"whoami.k3s.nox","path":"/","allNodes":false}]'
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"networking.k8s.io/v1","kind":"Ingress","metadata":{"annotations":{"kubernetes.io/ingress.class":"traefik"},"name":"whoami-ing","namespace":"default"},"spec":{"rules":[{"host":"whoami.citadel.lan","http":{"paths":[{"backend":{"service":{"name":"whoami","port":{"number":80}}},"path":"/","pathType":"Prefix"}]}}]}}
+      kubernetes.io/ingress.class: traefik
+    creationTimestamp: "2025-08-16T01:22:13Z"
+    generation: 2
+    name: whoami-ing
+    namespace: default
+    resourceVersion: "10254"
+    uid: 226c6701-191e-4199-9032-37069fec9239
+  spec:
+    rules:
+    - host: whoami.k3s.nox
+      http:
+        paths:
+        - backend:
+            service:
+              name: whoami
+              port:
+                number: 80
+          path: /
+          pathType: Prefix
+  status:
+    loadBalancer:
+      ingress:
+      - ip: 192.168.1.231
+- apiVersion: networking.k8s.io/v1
+  kind: Ingress
+  metadata:
+    annotations:
+      field.cattle.io/publicEndpoints: '[{"addresses":["192.168.1.231"],"port":80,"protocol":"HTTP","serviceName":"homarr:homarr","ingressName":"homarr:homarr","hostname":"dashboard.k3s.nox","path":"/","allNodes":false}]'
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"networking.k8s.io/v1","kind":"Ingress","metadata":{"annotations":{"traefik.ingress.kubernetes.io/router.entrypoints":"web"},"name":"homarr","namespace":"homarr"},"spec":{"ingressClassName":"traefik","rules":[{"host":"dashboard.k3s.nox","http":{"paths":[{"backend":{"service":{"name":"homarr","port":{"number":7575}}},"path":"/","pathType":"Prefix"}]}}]}}
+      traefik.ingress.kubernetes.io/router.entrypoints: web
+    creationTimestamp: "2026-01-08T04:19:25Z"
+    generation: 1
+    name: homarr
+    namespace: homarr
+    resourceVersion: "56839"
+    uid: 39bfe8c8-532d-42f3-b653-f9320c1c436f
+  spec:
+    ingressClassName: traefik
+    rules:
+    - host: dashboard.k3s.nox
+      http:
+        paths:
+        - backend:
+            service:
+              name: homarr
+              port:
+                number: 7575
+          path: /
+          pathType: Prefix
+  status:
+    loadBalancer:
+      ingress:
+      - ip: 192.168.1.231
+- apiVersion: networking.k8s.io/v1
+  kind: Ingress
+  metadata:
+    annotations:
+      field.cattle.io/publicEndpoints: '[{"addresses":["192.168.1.231"],"port":80,"protocol":"HTTP","serviceName":"homer:homer","ingressName":"homer:homer","hostname":"home.k3s.nox","path":"/","allNodes":false}]'
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"networking.k8s.io/v1","kind":"Ingress","metadata":{"annotations":{"traefik.ingress.kubernetes.io/router.entrypoints":"web"},"name":"homer","namespace":"homer"},"spec":{"ingressClassName":"traefik","rules":[{"host":"home.k3s.nox","http":{"paths":[{"backend":{"service":{"name":"homer","port":{"number":80}}},"path":"/","pathType":"Prefix"}]}}]}}
+      traefik.ingress.kubernetes.io/router.entrypoints: web
+    creationTimestamp: "2026-01-08T03:26:53Z"
+    generation: 1
+    name: homer
+    namespace: homer
+    resourceVersion: "34155"
+    uid: 6571a93d-7dca-45a5-80c7-b05d289baa4b
+  spec:
+    ingressClassName: traefik
+    rules:
+    - host: home.k3s.nox
+      http:
+        paths:
+        - backend:
+            service:
+              name: homer
+              port:
+                number: 80
+          path: /
+          pathType: Prefix
+  status:
+    loadBalancer:
+      ingress:
+      - ip: 192.168.1.231
+- apiVersion: networking.k8s.io/v1
+  kind: Ingress
+  metadata:
+    annotations:
+      field.cattle.io/publicEndpoints: '[{"addresses":["192.168.1.231"],"port":80,"protocol":"HTTP","serviceName":"kube-system:traefik","ingressName":"kube-system:traefik-dashboard","hostname":"traefik.k3s.nox","path":"/","allNodes":false}]'
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"networking.k8s.io/v1","kind":"Ingress","metadata":{"annotations":{},"name":"traefik-dashboard","namespace":"kube-system"},"spec":{"ingressClassName":"traefik","rules":[{"host":"traefik.k3s.nox","http":{"paths":[{"backend":{"service":{"name":"traefik","port":{"number":9000}}},"path":"/","pathType":"Prefix"}]}}]}}
+    creationTimestamp: "2025-08-16T02:03:28Z"
+    generation: 1
+    name: traefik-dashboard
+    namespace: kube-system
+    resourceVersion: "10253"
+    uid: dfa6ba79-4028-4398-821e-8631857b1112
+  spec:
+    ingressClassName: traefik
+    rules:
+    - host: traefik.k3s.nox
+      http:
+        paths:
+        - backend:
+            service:
+              name: traefik
+              port:
+                number: 9000
+          path: /
+          pathType: Prefix
+  status:
+    loadBalancer:
+      ingress:
+      - ip: 192.168.1.231
+- apiVersion: networking.k8s.io/v1
+  kind: Ingress
+  metadata:
+    annotations:
+      field.cattle.io/publicEndpoints: '[{"addresses":["192.168.1.231"],"port":80,"protocol":"HTTP","serviceName":"observability:kps-grafana","ingressName":"observability:grafana","hostname":"grafana.k3s.nox","path":"/","allNodes":false},{"addresses":["192.168.1.231"],"port":80,"protocol":"HTTP","serviceName":"observability:kps-grafana","ingressName":"observability:grafana","hostname":"grafana.home.lab","path":"/","allNodes":false}]'
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"networking.k8s.io/v1","kind":"Ingress","metadata":{"annotations":{},"name":"grafana","namespace":"observability"},"spec":{"ingressClassName":"traefik","rules":[{"host":"grafana.k3s.nox","http":{"paths":[{"backend":{"service":{"name":"kps-grafana","port":{"number":80}}},"path":"/","pathType":"Prefix"}]}}]}}
+    creationTimestamp: "2025-08-16T01:51:05Z"
+    generation: 2
+    name: grafana
+    namespace: observability
+    resourceVersion: "24273"
+    uid: acdea085-2813-43d6-b27b-55d4762bc499
+  spec:
+    ingressClassName: traefik
+    rules:
+    - host: grafana.k3s.nox
+      http:
+        paths:
+        - backend:
+            service:
+              name: kps-grafana
+              port:
+                number: 80
+          path: /
+          pathType: Prefix
+    - host: grafana.home.lab
+      http:
+        paths:
+        - backend:
+            service:
+              name: kps-grafana
+              port:
+                number: 80
+          path: /
+          pathType: Prefix
+  status:
+    loadBalancer:
+      ingress:
+      - ip: 192.168.1.231
+- apiVersion: networking.k8s.io/v1
+  kind: Ingress
+  metadata:
+    annotations:
+      field.cattle.io/publicEndpoints: '[{"addresses":["192.168.1.231"],"port":80,"protocol":"HTTP","serviceName":"uptime-kuma:uptime-kuma","ingressName":"uptime-kuma:uptime-kuma","hostname":"uptime.k3s.nox","path":"/","allNodes":false}]'
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"networking.k8s.io/v1","kind":"Ingress","metadata":{"annotations":{"traefik.ingress.kubernetes.io/router.entrypoints":"web"},"name":"uptime-kuma","namespace":"uptime-kuma"},"spec":{"ingressClassName":"traefik","rules":[{"host":"uptime.k3s.nox","http":{"paths":[{"backend":{"service":{"name":"uptime-kuma","port":{"number":80}}},"path":"/","pathType":"Prefix"}]}}]}}
+      traefik.ingress.kubernetes.io/router.entrypoints: web
+    creationTimestamp: "2026-01-08T03:26:53Z"
+    generation: 1
+    name: uptime-kuma
+    namespace: uptime-kuma
+    resourceVersion: "34117"
+    uid: 70e7b24f-f817-4e1f-ba0b-4e6a548dff57
+  spec:
+    ingressClassName: traefik
+    rules:
+    - host: uptime.k3s.nox
+      http:
+        paths:
+        - backend:
+            service:
+              name: uptime-kuma
+              port:
+                number: 80
+          path: /
+          pathType: Prefix
+  status:
+    loadBalancer:
+      ingress:
+      - ip: 192.168.1.231
+kind: List
+metadata:
+  resourceVersion: ""
