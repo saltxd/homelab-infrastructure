@@ -1,0 +1,36 @@
+# Network Overview
+
+*Last updated: {{ updated_at }}*
+
+## Network Topology
+
+| Segment | Range | Purpose |
+|---------|-------|---------|
+| LAN | 10.0.0.0/24 | Primary network |
+| K3s Pods | 10.42.0.0/16 | Kubernetes pod network |
+| K3s Services | 10.43.0.0/16 | Kubernetes service network |
+
+## Key IP Addresses
+
+| Service | IP Address | Description |
+|---------|------------|-------------|
+| K3s API | 10.0.1.10:6443 | Kubernetes API server |
+| Traefik LB | 10.0.2.31 | Ingress LoadBalancer |
+| AdGuard DNS | 10.0.0.2 | Primary DNS |
+| MetalLB Pool | 10.0.2.31-239 | LoadBalancer IP range |
+
+## DNS Configuration
+
+DNS is handled by AdGuard Home at `10.0.0.2`.
+
+### DNS Rewrites
+- `*.cluster.local` → 10.0.2.31
+- `*.cluster.local` → 10.0.2.31
+- `*.cluster.local` → 10.0.2.31
+
+## Gateway & Routing
+
+| Route | Gateway | Interface |
+|-------|---------|-----------|
+| Default | 10.0.0.1 | LAN |
+| Tailscale | 100.x.x.x | tailscale0 |

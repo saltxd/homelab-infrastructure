@@ -1,0 +1,25 @@
+# Proxmox Node Inventory
+
+*Last updated: {{ updated_at }}*
+
+## Cluster Overview
+
+| Node | IP Address | Status | CPU | Memory | Storage |
+|------|------------|--------|-----|--------|---------|
+{% for node in nodes %}
+| {{ node.name }} | {{ node.ip }} | {{ node.status }} | {{ node.cpu_usage }}% | {{ node.mem_used }}/{{ node.mem_total }} | {{ node.disk_used }}/{{ node.disk_total }} |
+{% endfor %}
+
+## Node Details
+
+{% for node in nodes %}
+### {{ node.name }}
+
+- **IP Address**: {{ node.ip }}
+- **Status**: {{ node.status }}
+- **Uptime**: {{ node.uptime }}
+- **CPU Cores**: {{ node.cpu_cores }}
+- **Memory**: {{ node.mem_total }}
+- **Storage Pools**: {{ node.storage_pools | join(', ') }}
+
+{% endfor %}
