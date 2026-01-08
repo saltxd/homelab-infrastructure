@@ -1,0 +1,38 @@
+# n8n Configuration - Homelab
+# Created: 2026-01-08
+
+n8n:
+  url: http://n8n.k3s.nox
+  credentials:
+    username: admin
+    password: changeme
+  webhook_secret: YOUR_WEBHOOK_SECRET
+
+postgresql:
+  host: postgresql.automation.svc.cluster.local
+  port: 5432
+  database: n8n
+  username: n8n
+  password: changeme
+
+gpt_os:
+  orchestrator_url: http://192.168.1.230:8000
+  endpoints:
+    orchestrate: /orchestrate
+    health: /health
+    stats: /stats
+
+discord:
+  webhook_url: "https://discord.com/api/webhooks/YOUR_WEBHOOK_ID/YOUR_DISCORD_WEBHOOK_HERE"
+
+prometheus:
+  url: http://prometheus.k3s.nox
+  alertmanager_webhook: http://n8n.k3s.nox/webhook/prometheus-alerts
+
+uptime_kuma:
+  url: http://uptime.k3s.nox
+  # API token if needed
+
+kubernetes:
+  api_url: https://192.168.1.190:6443
+  # Service account token mounted in pod

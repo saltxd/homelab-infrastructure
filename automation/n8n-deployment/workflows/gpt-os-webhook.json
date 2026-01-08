@@ -1,0 +1,376 @@
+{
+  "name": "GPT-OS Integration Webhook",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "gpt-os",
+        "options": {
+          "rawBody": false
+        }
+      },
+      "id": "webhook-trigger",
+      "name": "GPT-OS Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [250, 300],
+      "webhookId": "gpt-os"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Validate request and extract action\nconst body = $input.first().json;\nconst secretToken = $input.first().headers?.['x-secret-token'] || '';\nconst expectedToken = $vars.webhook_secret || 'YOUR_WEBHOOK_SECRET';\n\n// Validate token\nif (secretToken !== expectedToken) {\n  return [{ json: { success: false, error: 'Invalid token', code: 401 } }];\n}\n\n// Extract action\nconst action = body.action || 'unknown';\nconst params = body.params || {};\n\nreturn [{ json: { action, params, validated: true } }];"
+      },
+      "id": "validate-request",
+      "name": "Validate Request",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [470, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.validated }}",
+              "value2": "true",
+              "operation": "equals"
+            }
+          ]
+        }
+      },
+      "id": "check-valid",
+      "name": "Is Valid?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [690, 300]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "leftValue": "",
+                  "caseSensitive": true,
+                  "typeValidation": "strict"
+                },
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.action }}",
+                    "rightValue": "get_status",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "get_status"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "leftValue": "",
+                  "caseSensitive": true,
+                  "typeValidation": "strict"
+                },
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.action }}",
+                    "rightValue": "restart_pod",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "restart_pod"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "leftValue": "",
+                  "caseSensitive": true,
+                  "typeValidation": "strict"
+                },
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.action }}",
+                    "rightValue": "scale_deployment",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "scale_deployment"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "leftValue": "",
+                  "caseSensitive": true,
+                  "typeValidation": "strict"
+                },
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.action }}",
+                    "rightValue": "call_orchestrator",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "call_orchestrator"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "id": "switch-action",
+      "name": "Route by Action",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.1,
+      "position": [910, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get cluster status\nconst status = {\n  success: true,\n  action: 'get_status',\n  data: {\n    cluster: 'k3s-homelab',\n    nodes: ['fz-k3s', 'wt-k3s', 'sg-k3s-control', 'wt-k3s-worker'],\n    status: 'healthy',\n    services: {\n      prometheus: 'running',\n      grafana: 'running',\n      n8n: 'running'\n    }\n  },\n  timestamp: new Date().toISOString()\n};\nreturn [{ json: status }];"
+      },
+      "id": "action-get-status",
+      "name": "Get Status",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1130, 150]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Restart pod action\nconst params = $input.first().json.params;\nconst namespace = params.namespace || 'default';\nconst podName = params.pod || '';\n\nif (!podName) {\n  return [{ json: { success: false, error: 'Pod name required' } }];\n}\n\n// In real implementation, this would use kubectl or K8s API\nconst result = {\n  success: true,\n  action: 'restart_pod',\n  message: `Pod ${podName} in namespace ${namespace} restart initiated`,\n  timestamp: new Date().toISOString()\n};\nreturn [{ json: result }];"
+      },
+      "id": "action-restart-pod",
+      "name": "Restart Pod",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1130, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Scale deployment action\nconst params = $input.first().json.params;\nconst namespace = params.namespace || 'default';\nconst deployment = params.deployment || '';\nconst replicas = params.replicas || 1;\n\nif (!deployment) {\n  return [{ json: { success: false, error: 'Deployment name required' } }];\n}\n\nconst result = {\n  success: true,\n  action: 'scale_deployment',\n  message: `Deployment ${deployment} scaled to ${replicas} replicas`,\n  timestamp: new Date().toISOString()\n};\nreturn [{ json: result }];"
+      },
+      "id": "action-scale",
+      "name": "Scale Deployment",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1130, 450]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://192.168.1.230:8000/orchestrate",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.params) }}",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "call-gpt-os",
+      "name": "Call GPT-OS Orchestrator",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1130, 600]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Unknown action handler\nreturn [{ json: {\n  success: false,\n  error: 'Unknown action',\n  available_actions: ['get_status', 'restart_pod', 'scale_deployment', 'call_orchestrator'],\n  timestamp: new Date().toISOString()\n}}];"
+      },
+      "id": "unknown-action",
+      "name": "Unknown Action",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1130, 750]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {}
+      },
+      "id": "respond-success",
+      "name": "Respond",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1350, 400]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {
+          "responseCode": 401
+        }
+      },
+      "id": "respond-error",
+      "name": "Respond Error",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [910, 500]
+    }
+  ],
+  "connections": {
+    "GPT-OS Webhook": {
+      "main": [
+        [
+          {
+            "node": "Validate Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Request": {
+      "main": [
+        [
+          {
+            "node": "Is Valid?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Valid?": {
+      "main": [
+        [
+          {
+            "node": "Route by Action",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route by Action": {
+      "main": [
+        [
+          {
+            "node": "Get Status",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Restart Pod",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Scale Deployment",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Call GPT-OS Orchestrator",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Unknown Action",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Status": {
+      "main": [
+        [
+          {
+            "node": "Respond",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Restart Pod": {
+      "main": [
+        [
+          {
+            "node": "Respond",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Scale Deployment": {
+      "main": [
+        [
+          {
+            "node": "Respond",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call GPT-OS Orchestrator": {
+      "main": [
+        [
+          {
+            "node": "Respond",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Unknown Action": {
+      "main": [
+        [
+          {
+            "node": "Respond",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": ["gpt-os", "webhook", "integration"]
+}

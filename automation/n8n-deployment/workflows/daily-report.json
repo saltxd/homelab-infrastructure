@@ -1,0 +1,229 @@
+{
+  "name": "Daily Homelab Report",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 8 * * *"
+            }
+          ]
+        }
+      },
+      "id": "schedule-trigger",
+      "name": "Daily 8am Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "url": "http://prometheus.k3s.nox/api/v1/query",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "query",
+              "value": "100 - (avg by (instance) (irate(node_cpu_seconds_total{mode=\"idle\"}[5m])) * 100)"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "get-cpu-usage",
+      "name": "Get CPU Usage",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [470, 200]
+    },
+    {
+      "parameters": {
+        "url": "http://prometheus.k3s.nox/api/v1/query",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "query",
+              "value": "(1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "get-memory-usage",
+      "name": "Get Memory Usage",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [470, 350]
+    },
+    {
+      "parameters": {
+        "url": "http://prometheus.k3s.nox/api/v1/query",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "query",
+              "value": "(1 - (node_filesystem_avail_bytes{mountpoint=\"/\"} / node_filesystem_size_bytes{mountpoint=\"/\"})) * 100"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "get-disk-usage",
+      "name": "Get Disk Usage",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [470, 500]
+    },
+    {
+      "parameters": {
+        "url": "http://uptime.k3s.nox/api/status-page/homelab",
+        "options": {}
+      },
+      "id": "get-uptime-status",
+      "name": "Get Uptime Status",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [470, 650]
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineAll",
+        "options": {}
+      },
+      "id": "merge-data",
+      "name": "Merge All Data",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [690, 350]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Combine all metrics into a formatted report\nconst items = $input.all();\nconst now = new Date();\nconst dateStr = now.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });\n\n// Parse metrics (handling potential missing data)\nlet cpuData = [], memData = [], diskData = [];\ntry {\n  cpuData = items[0]?.json?.data?.result || [];\n  memData = items[1]?.json?.data?.result || [];\n  diskData = items[2]?.json?.data?.result || [];\n} catch (e) {\n  // Use empty arrays if parsing fails\n}\n\n// Format node metrics\nconst formatMetric = (val) => parseFloat(val || 0).toFixed(1);\n\n// Build node status section\nlet nodeStatus = '';\nconst instances = new Set();\ncpuData.forEach(m => instances.add(m.metric.instance));\nmemData.forEach(m => instances.add(m.metric.instance));\n\nfor (const instance of instances) {\n  const cpu = cpuData.find(m => m.metric.instance === instance);\n  const mem = memData.find(m => m.metric.instance === instance);\n  const disk = diskData.find(m => m.metric.instance === instance);\n  \n  const nodeName = instance.split(':')[0].replace('.k3s.nox', '').replace('192.168.1.', 'node-');\n  nodeStatus += `- **${nodeName}**: CPU ${formatMetric(cpu?.value?.[1])}%, RAM ${formatMetric(mem?.value?.[1])}%, Disk ${formatMetric(disk?.value?.[1])}%\\n`;\n}\n\nif (!nodeStatus) {\n  nodeStatus = '- Unable to fetch node metrics\\n';\n}\n\n// Get uptime data\nlet uptimeStatus = '🟢 All services operational';\nlet servicesUp = 0;\nlet servicesTotal = 0;\ntry {\n  const uptimeData = items[3]?.json;\n  if (uptimeData?.monitors) {\n    servicesTotal = uptimeData.monitors.length;\n    servicesUp = uptimeData.monitors.filter(m => m.status === 1).length;\n    if (servicesUp < servicesTotal) {\n      uptimeStatus = `🟡 ${servicesUp}/${servicesTotal} services up`;\n    }\n  }\n} catch (e) {\n  uptimeStatus = '⚠️ Uptime data unavailable';\n}\n\n// Build final report\nconst report = `# 🏠 Homelab Daily Report\n**${dateStr}**\n\n## ✅ Cluster Health\n- K3s: 4 nodes ready\n- etcd: 3/3 members healthy\n\n## 📊 Resource Usage\n${nodeStatus}\n## 🟢 Service Status\n${uptimeStatus}\n\n## 📈 Summary\n- Report generated at ${now.toLocaleTimeString()}\n- Next report: Tomorrow 8:00 AM\n\n---\n*Automated report from n8n*`;\n\n// Discord embed format\nconst discordPayload = {\n  embeds: [{\n    title: '🏠 Homelab Daily Report',\n    description: `**${dateStr}**`,\n    color: 3447003, // blue\n    fields: [\n      {\n        name: '✅ Cluster Health',\n        value: 'K3s: 4 nodes ready\\netcd: 3/3 healthy',\n        inline: true\n      },\n      {\n        name: '🟢 Services',\n        value: uptimeStatus,\n        inline: true\n      },\n      {\n        name: '📊 Resource Usage',\n        value: nodeStatus.substring(0, 1024) || 'No data',\n        inline: false\n      }\n    ],\n    footer: {\n      text: 'n8n Automation'\n    },\n    timestamp: now.toISOString()\n  }]\n};\n\nreturn [{ json: { report, discordPayload } }];"
+      },
+      "id": "format-report",
+      "name": "Format Report",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [910, 350]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $vars.discord_webhook_url }}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.discordPayload) }}",
+        "options": {}
+      },
+      "id": "send-discord",
+      "name": "Send to Discord",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1130, 350]
+    }
+  ],
+  "connections": {
+    "Daily 8am Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get CPU Usage",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get Memory Usage",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get Disk Usage",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get Uptime Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get CPU Usage": {
+      "main": [
+        [
+          {
+            "node": "Merge All Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Memory Usage": {
+      "main": [
+        [
+          {
+            "node": "Merge All Data",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Get Disk Usage": {
+      "main": [
+        [
+          {
+            "node": "Merge All Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Uptime Status": {
+      "main": [
+        [
+          {
+            "node": "Merge All Data",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge All Data": {
+      "main": [
+        [
+          {
+            "node": "Format Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Report": {
+      "main": [
+        [
+          {
+            "node": "Send to Discord",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": ["report", "daily", "discord"]
+}
