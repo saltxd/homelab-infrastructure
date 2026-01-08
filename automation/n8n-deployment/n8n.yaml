@@ -111,6 +111,9 @@ spec:
               value: "false"
             - name: N8N_HIRING_BANNER_ENABLED
               value: "false"
+            # Required for HTTP access (no TLS)
+            - name: N8N_SECURE_COOKIE
+              value: "false"
           volumeMounts:
             - name: n8n-data
               mountPath: /home/node/.n8n
