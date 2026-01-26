@@ -145,7 +145,7 @@ Prometheus scrapes metrics from the entire homelab, not just K3s.
 
 Access Grafana: http://grafana.home.lab
 - Username: `admin`
-- Password: `changeme`
+- Password: `<set during helm install>`
 
 ### Adding New Hosts to Monitoring
 

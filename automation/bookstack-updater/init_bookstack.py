@@ -12,7 +12,7 @@ from pathlib import Path
 
 BOOKSTACK_URL = "http://docs.k3s.nox"
 DEFAULT_EMAIL = "admin@admin.com"
-DEFAULT_PASSWORD = "password"
+DEFAULT_PASSWORD = os.getenv("BOOKSTACK_DEFAULT_PASSWORD", "password")
 
 class BookStackSession:
     """Session-based BookStack client for initial setup"""
