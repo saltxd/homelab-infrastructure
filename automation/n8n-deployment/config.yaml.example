@@ -6,7 +6,7 @@ n8n:
   credentials:
     username: admin
     password: changeme
-  webhook_secret: YOUR_WEBHOOK_SECRET
+  webhook_secret: changeme
 
 postgresql:
   host: postgresql.automation.svc.cluster.local
