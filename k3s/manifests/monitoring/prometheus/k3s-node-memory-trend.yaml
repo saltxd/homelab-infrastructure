@@ -43,15 +43,15 @@ spec:
         component: k3s-capacity
     - alert: K3sNodeSwapInUse
       annotations:
-        summary: "K3s node {{ $labels.instance }} is using swap"
+        summary: "K3s node {{ $labels.instance }} is actively paging to swap ({{ printf \"%.1f\" $value }} pages/s)"
         description: |
-          K3s node {{ $labels.instance }} has non-trivial swap in use
-          ({{ $value | humanize1024 }}B). Any sustained swap activity on a
-          k3s node is a capacity warning — workloads are paging because RAM
-          is tight. Bump VM memory or rebalance before a page-fault storm.
-      expr: |
-        (node_memory_SwapTotal_bytes{job="node-exporter", instance=~"192\\.168\\.1\\.(190|191|192|193):9100"}
-        - node_memory_SwapFree_bytes{job="node-exporter", instance=~"192\\.168\\.1\\.(190|191|192|193):9100"}) > 10485760
+          K3s node {{ $labels.instance }} is actively paging in from swap
+          ({{ printf "%.1f" $value }} pages/s sustained over 15m). Unlike
+          residency — cold pages sitting in swap are harmless — swap-in
+          rate is the real capacity signal: workloads are fetching paged-out
+          memory right now. Bump VM memory or rebalance before a page-fault
+          storm.
+      expr: rate(node_vmstat_pswpin{job="node-exporter", instance=~"192\\.168\\.1\\.(190|191|192|193):9100"}[5m]) > 0
       for: 15m
       labels:
         severity: warning
