@@ -1,0 +1,71 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: k3s-node-memory-trend
+  namespace: observability
+  labels:
+    app: kube-prometheus-stack
+    app.kubernetes.io/instance: kps
+    release: kps
+spec:
+  groups:
+  - name: k3s-node-memory-capacity
+    rules:
+    - alert: K3sNodeMemoryAvailableLow
+      annotations:
+        summary: "K3s node {{ $labels.instance }} sustained low available memory ({{ printf \"%.1f\" $value }}%)"
+        description: |
+          K3s node {{ $labels.instance }} has averaged <15% available memory
+          over the last 6 hours. Capacity planning signal: workload is
+          approaching VM's RAM ceiling. With hotplug enabled, bumping VM
+          memory is zero-downtime — do it before active swap pressure.
+      expr: |
+        avg_over_time(node_memory_MemAvailable_bytes{job="node-exporter", instance=~"192\\.168\\.1\\.(190|191|192|193):9100"}[6h])
+        / on(instance) node_memory_MemTotal_bytes{job="node-exporter", instance=~"192\\.168\\.1\\.(190|191|192|193):9100"}
+        * 100 < 15
+      for: 30m
+      labels:
+        severity: warning
+        component: k3s-capacity
+    - alert: K3sNodeMemoryAvailableCritical
+      annotations:
+        summary: "K3s node {{ $labels.instance }} critically low available memory ({{ printf \"%.1f\" $value }}%)"
+        description: |
+          K3s node {{ $labels.instance }} averaged <8% available memory over 6h.
+          Swap pressure imminent. Act now — bump memory or drain workloads.
+      expr: |
+        avg_over_time(node_memory_MemAvailable_bytes{job="node-exporter", instance=~"192\\.168\\.1\\.(190|191|192|193):9100"}[6h])
+        / on(instance) node_memory_MemTotal_bytes{job="node-exporter", instance=~"192\\.168\\.1\\.(190|191|192|193):9100"}
+        * 100 < 8
+      for: 15m
+      labels:
+        severity: critical
+        component: k3s-capacity
+    - alert: K3sNodeSwapInUse
+      annotations:
+        summary: "K3s node {{ $labels.instance }} is using swap"
+        description: |
+          K3s node {{ $labels.instance }} has non-trivial swap in use
+          ({{ $value | humanize1024 }}B). Any sustained swap activity on a
+          k3s node is a capacity warning — workloads are paging because RAM
+          is tight. Bump VM memory or rebalance before a page-fault storm.
+      expr: |
+        (node_memory_SwapTotal_bytes{job="node-exporter", instance=~"192\\.168\\.1\\.(190|191|192|193):9100"}
+        - node_memory_SwapFree_bytes{job="node-exporter", instance=~"192\\.168\\.1\\.(190|191|192|193):9100"}) > 10485760
+      for: 15m
+      labels:
+        severity: warning
+        component: k3s-capacity
+    - alert: K3sNodeMajorPageFaultsEarly
+      annotations:
+        summary: "K3s node {{ $labels.instance }} sustained major page faults ({{ printf \"%.0f\" $value }}/s)"
+        description: |
+          Sustained major page faults on k3s node — early signal of memory
+          pressure. Fires an order of magnitude below NodeMemoryMajorPagesFaults
+          (which triggered at 1635/s during sc-k3s post-mortem) so we catch
+          pressure before a full swap storm.
+      expr: rate(node_vmstat_pgmajfault{job="node-exporter", instance=~"192\\.168\\.1\\.(190|191|192|193):9100"}[5m]) > 50
+      for: 15m
+      labels:
+        severity: warning
+        component: k3s-capacity
